@@ -26,9 +26,53 @@
     
 </head>
 <body>
+<a href=mii-man.github.io/auroraccount/signup>Sign Up</a>
 <input type="text" placeholder="Username">
 <input type="password" placeholder="Password" minlength="8">
 <input type="button" placeholder="Submit">
     
+    
+    
+    
+    <script>
+const loginForm = document.getElementById('login-form');
+loginForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const username = document.getElementById('username').value;
+  const password = document.getElementById('password').value;
+
+  // Step 1: Find the user’s email using their username
+  const { data: users, error: lookupError } = await supabase
+    .from('profiles')
+    .select('id')
+    .eq('username', username)
+    .single();
+
+  if (lookupError || !users) {
+    alert('Username not found.');
+    return;
+  }
+
+  // Step 2: Get their email from auth.users using the profile ID
+  const { data: userData, error: userError } = await supabase.auth.admin.getUserById(users.id);
+  if (userError) {
+    alert('Could not find account email.');
+    return;
+  }
+
+  const email = userData.user.email;
+
+  // Step 3: Log in using email + password (but the user never sees the email)
+  const { error: loginError } = await supabase.auth.signInWithPassword({ email, password });
+  if (loginError) {
+    alert('Login failed: ' + loginError.message);
+  } else {
+    alert('Welcome back, ' + username + '!');
+  }
+});
+</script>
+
+
 </body>
 </html>
